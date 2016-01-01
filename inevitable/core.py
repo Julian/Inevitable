@@ -16,8 +16,8 @@ class Reactor(object):
         waitable = CallAt(clock=clock, time=clock.time() + seconds)
         self._waiting = self._waiting.add((waitable, callback))
 
-    def run(self):
-        while True:
+    def run_until_idle(self):
+        while self._waiting:
             for waitable, callback in self._waiting:
                 if waitable.is_ready():
                     self._waiting = self._waiting.remove((waitable, callback))
@@ -26,8 +26,8 @@ class Reactor(object):
 
 @attributes(
     [
-        Attribute(name="clock"),
         Attribute(name="time"),
+        Attribute(name="clock", exclude_from_cmp=True),
     ],
 )
 class CallAt(object):
