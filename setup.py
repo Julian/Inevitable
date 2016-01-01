@@ -19,7 +19,7 @@ classifiers = [
 setup(
     name="inevitable",
     packages=find_packages(),
-    install_requires=["characteristic"],
+    install_requires=["characteristic", "pyrsistent"],
     setup_requires=["vcversioner"],
     vcversioner={"version_module_paths": ["inevitable/_version.py"]},
     author="Jullian Berman",
