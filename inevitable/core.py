@@ -7,17 +7,15 @@ from pyrsistent import s as pset
 
 @attributes(
     [
-        Attribute(name="clock", default_value=time),
+        Attribute(name="_clock", default_value=time),
+        Attribute(name="_waiting", default_factory=pset),
     ],
 )
 class Reactor(object):
-    def __init__(self):
-        self._waiting = pset()
-
     def call_later(self, callback, seconds):
-        clock = self.clock
+        clock = self._clock
         waitable = CallAt(clock=clock, time=clock.time() + seconds)
-        self.wait_on(waitable, callback=callback)
+        return self.wait_on(waitable, callback=callback)
 
     def wait_on(self, waitable, callback):
         self._waiting = self._waiting.add((waitable, callback))
@@ -35,9 +33,9 @@ class Reactor(object):
 @attributes(
     [
         Attribute(name="time"),
-        Attribute(name="clock", exclude_from_cmp=True),
+        Attribute(name="_clock", exclude_from_cmp=True),
     ],
 )
 class CallAt(object):
     def is_ready(self):
-        return self.time <= self.clock.time()
+        return self.time <= self._clock.time()
