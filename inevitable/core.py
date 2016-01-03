@@ -1,3 +1,5 @@
+from transaction import TransactionQueue
+
 from characteristic import Attribute, attributes
 from pyrsistent import s as pset
 
@@ -18,10 +20,12 @@ class Reactor(object):
 
     def run_until_idle(self):
         while self._waiting:
+            queue = TransactionQueue()
             for waitable, callback in self._waiting:
                 if waitable.is_ready():
                     self._waiting = self._waiting.remove((waitable, callback))
-                    callback()
+                    queue.add(callback)
+            queue.run()
 
 
 @attributes(
