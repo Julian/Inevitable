@@ -40,3 +40,14 @@ class TestReactor(TestCase):
         reactor.call_later(callback=self.callback, seconds=2)
         reactor.run_until_idle()
         self.assertEqual(self.called, 1)
+
+    def test_ready_waitable_things_are_run(self):
+        class Thing(object):
+            def is_ready(self):
+                return True
+
+        reactor = Reactor()
+        reactor.wait_on(Thing(), callback=self.callback)
+        reactor.run_until_idle()
+
+        self.assertTrue(self.called)
