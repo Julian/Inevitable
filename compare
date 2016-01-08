@@ -1,30 +1,39 @@
 #! /usr/bin/env pypy
 import os
 import subprocess
+import sys
 import time
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-PYPY = os.environ.get("PYPYBIN", "pypy")
+PYPY = os.environ.get("PYPYBIN", sys.executable)
 PYPY_STM = os.environ.get("PYPYSTMBIN", "pypy-stm")
 
 
-def calculate_runtime(python, benchmark, iterations=5):
+def calculate_runtime(python, benchmark, argv, iterations=5):
     times = []
     for _ in xrange(iterations):
         start = time.time()
-        subprocess.call([python, os.path.join(HERE, "examples", benchmark)])
+        subprocess.check_call(
+            [python, os.path.join(HERE, "examples", benchmark)] + argv,
+        )
         times.append(time.time() - start)
     return times
 
 
 def main():
+    message = "{0} ({1} iterations, {2} threads): \033[1;33m{3}\033[0;0m"
+    iterations = 1000
+
     for pypy in PYPY, PYPY_STM:
-        print "\033[1;33m{0}: {1}\033[0;0m".format(
-            pypy,
-            calculate_runtime(python=pypy, benchmark="call_later.py"),
-        )
+        for threads in xrange(1, 6):
+            runtimes = calculate_runtime(
+                python=pypy,
+                benchmark="call_later.py",
+                argv=[str(iterations), str(threads)],
+            )
+            print message.format(pypy, iterations, threads, runtimes)
 
 
 main()
